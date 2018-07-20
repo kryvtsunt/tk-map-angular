@@ -1,9 +1,5 @@
-<div class="container border-bottom border-dark">
+<div class="container">
   <br/>
-  <div class="text-center">
-  <h2 ><strong> <span id="sunrise">Sunrise </span> | <span id="sunset">Sunset </span></strong></h2>
-  <!--<p> This is a simple Angular application ... </p>-->
-  </div>
   <br/>
   <div class="row">
     <div class="col-md-6">
@@ -22,7 +18,7 @@
           <input type="number" class="form-control" name="latitude" [(ngModel)]="lat" placeholder="Enter latitude" required>
           <input type="number" class="form-control" name="longitude" [(ngModel)]="lng" placeholder="Enter longitude" required>
         <div class="btn-group input-group-append">
-        <button (click)="getData()" type="submit" class="btn btn-dark " [disabled]="form2.invalid"><i class="fa fa-search"></i></button>
+        <button type="submit" class="btn btn-dark " [disabled]="form2.invalid"><i class="fa fa-search"></i></button>
         </div>
       </form>
     </div>
@@ -34,35 +30,23 @@
     <div class="col-md-12">
       <div class="text-center">
         <h3>
-          <div #gmap style="width:100%;height:400px"></div>
+          <div #gmap style="width:100%;height:400px; border: 2px solid #373737"></div>
         </h3>
       </div>
     </div>
   </div>
 
-  <br/>
 
-  <div class="row">
-    <div class="col-6">
-      <div *ngIf="apiData" class="float-left">
-        <h4>
-          <span id="sunrise"><i class="fa fa-sun"></i>
-            <!--<i class="fa fa-arrow-up"></i>-->
-          </span>
-          Sunrise: <strong>{{this.apiData.results.sunrise}} </strong> UTC</h4>
-      </div>
-    </div>
-    <div class="col-6">
-      <div *ngIf="apiData" class="float-right">
-        <h4>
-          <span id="sunset"><i class="fa fa-sun" ></i>
-            <!--<i class="fa fa-arrow-down"></i>-->
-          </span>
-          Sunset: <strong>{{this.apiData.results.sunset}} </strong>UTC</h4>
-      </div>
-    </div>
+  <div class="btn-group input-group-append d-flex justify-content-center">
+    <button title="Save" type="submit" class="btn btn-dark"><i class="fa fa-save"></i> Save </button>
+    <button *ngIf="!visible" (click)="changeVisibility()" class="btn btn-outline-dark"> Show (not visible) </button>
+    <button *ngIf="visible" (click)="changeVisibility()" class="btn btn-dark"> Show (visible) </button>
+    <button (click)="deleteMarkers()" type="submit" class="btn btn-dark">Clean <i class="fa fa-trash"></i></button>
 
   </div>
+  <hr/>
+  <br/>
+
 
 
 

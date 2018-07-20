@@ -5,14 +5,17 @@ import { AppComponent } from './app.component';
 import {NavbarComponent} from './navbar/navbar';
 import {FormsModule} from '@angular/forms';
 import {HttpClientModule} from '@angular/common/http';
-import {routing} from "./app.routing";
-import {HomeComponent} from "./home/home.component";
+import {routing} from './app.routing';
+import {HomeComponent} from './home/home.component';
+import {APIServiceClient} from './services/APIServiceClient';
+import {AboutComponent} from "./about/about.component";
 
 @NgModule({
   declarations: [
     AppComponent,
     NavbarComponent,
-    HomeComponent
+    HomeComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule,
@@ -20,7 +23,7 @@ import {HomeComponent} from "./home/home.component";
     HttpClientModule,
     routing
   ],
-  providers: [],
+  providers: [APIServiceClient],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
