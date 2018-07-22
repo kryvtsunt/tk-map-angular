@@ -151,6 +151,7 @@ export class HomeComponent implements OnInit {
       } else {
         title = this.marker_title;
       }
+      this.marker_title = '';
       switch (this.marker_type) {
         case 'restaurant': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/restaurant-71.png'; break;
         case 'pharmacy': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/shopping-71.png'; break;
@@ -173,7 +174,7 @@ export class HomeComponent implements OnInit {
         visible: this.visible
       });
       this.markers.push(marker);
-      this.marker_title = '';
+
     });
   }
 

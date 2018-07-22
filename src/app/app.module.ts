@@ -9,12 +9,17 @@ import {routing} from './app.routing';
 import {HomeComponent} from './home/home.component';
 import {APIServiceClient} from './services/APIServiceClient';
 import {AboutComponent} from "./about/about.component";
+import {LoginComponent} from "./login/login.component";
+import {RegisterComponent} from "./register/register.component";
+import {UserServiceClient} from "./services/user.service.client";
 
 @NgModule({
   declarations: [
     AppComponent,
     NavbarComponent,
     HomeComponent,
+    LoginComponent,
+    RegisterComponent,
     AboutComponent
   ],
   imports: [
@@ -23,7 +28,7 @@ import {AboutComponent} from "./about/about.component";
     HttpClientModule,
     routing
   ],
-  providers: [APIServiceClient],
+  providers: [APIServiceClient, UserServiceClient],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
