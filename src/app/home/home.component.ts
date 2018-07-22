@@ -13,6 +13,8 @@ export class HomeComponent implements OnInit {
   map: google.maps.Map;
   infoWindow: google.maps.InfoWindow;
   marker: google.maps.Marker;
+  marker_type: string;
+  marker_title: string;
   markers: google.maps.Marker[];
 
   city: string;
@@ -36,52 +38,51 @@ export class HomeComponent implements OnInit {
       });
   }
 
-  getPlaces() {
+  getPlaces(type: string) {
     const request = {
-      location: new google.maps.LatLng(this.lat, this.lng),
-      radius: 1000,
-      type: 'restaurant'
+      location: this.map.getCenter(),
+      radius: 2000,
+      type: type
     };
 
     const service = new google.maps.places.PlacesService(this.map);
     service.nearbySearch(request, results => {
-      for (let i = 0; i < results.length; i++) {
-        const place = results[i];
-        console.log(place);
+      console.log(results);
+      if (results.length > 0) {
+        for (let i = 0; i < results.length; i++) {
+          const place = results[i];
+        }
+        const bounds = new google.maps.LatLngBounds();
+        for (let i = 0; i < results.length; i++) {
+          const place = results[i];
+          const image = {
+            url: place.icon,
+            size: new google.maps.Size(71, 71),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(17, 34),
+            scaledSize: new google.maps.Size(25, 25)
+          };
+
+          const marker = new google.maps.Marker({
+            map: this.map,
+            icon: image,
+            title: place.name,
+            position: place.geometry.location
+          });
+
+          const li = document.createElement('li');
+          li.textContent = place.name;
+          marker.setVisible(this.visible);
+          this.markers.push(marker);
+          // placesList.appendChild(li);
+
+          bounds.extend(place.geometry.location);
+        }
+        this.map.fitBounds(bounds);
       }
-      const bounds = new google.maps.LatLngBounds();
-      for (let i = 0; i < results.length; i++) {
-        const place = results[i];
-        const image = {
-          url: place.icon,
-          size: new google.maps.Size(71, 71),
-          origin: new google.maps.Point(0, 0),
-          anchor: new google.maps.Point(17, 34),
-          scaledSize: new google.maps.Size(25, 25)
-        };
-
-        const marker = new google.maps.Marker({
-          map: this.map,
-          icon: image,
-          title: place.name,
-          position: place.geometry.location
-        });
-
-        const li = document.createElement('li');
-        li.textContent = place.name;
-        marker.setVisible(this.visible);
-        this.markers.push(marker);
-        // placesList.appendChild(li);
-
-        bounds.extend(place.geometry.location);
-      }
-      this.map.fitBounds(bounds);
     });
   }
 
-  callback(results, status) {
-
-  }
 
   setCenter() {
     this.map.setCenter(new google.maps.LatLng(this.lat, this.lng));
@@ -129,6 +130,7 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.city = '';
+    this.marker_title = '';
     this.markers = [];
     this.visible = true;
     const mapProp = {
@@ -142,13 +144,36 @@ export class HomeComponent implements OnInit {
     this.setCurrentLocation();
 
     google.maps.event.addListener(this.map, 'click', (event) => {
-      const marker = new google.maps.Marker;
-      marker.setPosition(event.latLng);
-      marker.setMap(this.map);
-      marker.setVisible(this.visible);
-      marker.setTitle('new marker')
+      let url;
+      let title;
+      if (this.marker_title === '') {
+        title = 'New marker';
+      } else {
+        title = this.marker_title;
+      }
+      switch (this.marker_type) {
+        case 'restaurant': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/restaurant-71.png'; break;
+        case 'pharmacy': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/shopping-71.png'; break;
+        case 'school': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/school-71.png'; break;
+        case 'gas': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/gas_station-71.png'; break;
+        default: url = 'https://maps.gstatic.com/mapfiles/place_api/icons/generic_business-71.png'; break;
+      }
+      const image = {
+        url: url,
+        size: new google.maps.Size(71, 71),
+        origin: new google.maps.Point(0, 0),
+        anchor: new google.maps.Point(10, 10),
+        scaledSize: new google.maps.Size(25, 25)
+      };
+      const marker = new google.maps.Marker({
+        map: this.map,
+        icon: image,
+        title: title,
+        position: event.latLng,
+        visible: this.visible
+      });
       this.markers.push(marker);
-      console.log(this.markers);
+      this.marker_title = '';
     });
   }
 
