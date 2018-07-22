@@ -2,6 +2,10 @@
   <br/>
   <div class="row">
     <div class="col-md-4">
+      <div *ngIf="loggedIn">
+        <h3 *ngIf="user">@{{user.username}}</h3>
+        <!--<br/>-->
+      </div>
       <form class="input-group flex flex-nowrap" #form1="ngForm" (ngSubmit)="setCenter()">
         <input size="40" [(ngModel)]="city" class="form-control" name="city" placeholder="Search" required/>
         <div class="btn-group input-group-append">
@@ -14,9 +18,9 @@
       <br/>
       <form class="input-group flex flex-nowrap" #form2="ngForm">
         <input type="text" class="form-control" [(ngModel)]="marker_title" name="Marker title" placeholder="New marker">
-        <select class="form-control" [(ngModel)]="marker_type"  name="Marker title">
+        <select class="form-control" [(ngModel)]="marker_type" name="Marker title">
           <option value="" disabled>Select marker type</option>
-          <option value="default"> Default </option>
+          <option value="default"> Default</option>
           <option value="restaurant"> Restaurant</option>
           <option value="school"> School</option>
           <option value="gas"> Gas Station</option>
@@ -48,10 +52,13 @@
         </h3>
       </div>
       <div class="btn-group d-flex justify-content-center">
-        <button title="Save" type="submit" class="btn btn-dark"><i class="fa fa-save"></i> Save</button>
-        <button *ngIf="!visible" (click)="changeVisibility()" class="btn btn-outline-dark"><i class="fa fa-eye-slash"></i> Show</button>
-        <button *ngIf="visible" (click)="changeVisibility()" class="btn btn-dark"><i class="fa fa-eye"></i> Show</button>
-        <button (click)="deleteMarkers()" class="btn btn-dark">Clean <i class="fa fa-trash"></i></button>
+        <button (click)="save()" title="Save" class="btn btn-dark"><i class="fa fa-save"></i> Save</button>
+        <button *ngIf="!visible" title="Show" (click)="changeVisibility()" class="btn btn-outline-dark"><i
+          class="fa fa-eye-slash"></i>
+        </button>
+        <button *ngIf="visible" title="Hide" (click)="changeVisibility()" class="btn btn-dark"><i class="fa fa-eye"></i>
+        </button>
+        <button (click)="deleteMarkers()" title="Clean" class="btn btn-dark">Clean <i class="fa fa-trash"></i></button>
       </div>
     </div>
   </div>
@@ -59,6 +66,4 @@
   <br/>
   <hr/>
   <br/>
-
-
 </div>

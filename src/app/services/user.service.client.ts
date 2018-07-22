@@ -18,7 +18,7 @@ export class UserServiceClient {
   checkStatus() {
     return fetch(HOST + 'api/status',
       {
-        credentials: 'include', // include, same-origin, *omit
+        credentials: 'include'
       })
       .then(response => response.json());
   }
@@ -39,22 +39,43 @@ export class UserServiceClient {
       response.json());
   }
 
+  updateUser(user) {
+    return fetch(HOST + 'api/user', {
+      body: JSON.stringify(user),
+      credentials: 'include',
+      method: 'put',
+      headers: {
+        'content-type': 'application/json'
+      }
+    }).then(response =>
+      response.json()
+    );
+  }
+
   logout() {
     return fetch(HOST + 'api/logout', {
       method: 'post',
       credentials: 'include'
     });
   }
-  
+
   register(user) {
     return fetch(HOST + 'api/register', {
       body: JSON.stringify(user),
-      credentials: 'include', // include, same-origin, *omit
+      credentials: 'include',
       method: 'post',
       headers: {
         'content-type': 'application/json'
       }
     });
+  }
+
+  profile() {
+    return fetch(HOST + 'api/user',
+      {
+        credentials: 'include'
+      })
+      .then(response => response.json());
   }
 
 }

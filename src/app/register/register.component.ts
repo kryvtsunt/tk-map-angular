@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {UserServiceClient} from '../services/user.service.client';
+import {User} from '../models/user.model.client';
 
 @Component({
   selector: 'app-register',
@@ -53,11 +54,11 @@ export class RegisterComponent implements OnInit {
               .then((response) => {
                 console.log(response);
                 if (response === null) {
-                  let user;
+                  const user = new User();
                   user.username = this.username;
                   user.password = this.password;
                   this.service.register(user)
-                    .then(() => this.router.navigate(['profile']));
+                    .then(() => this.router.navigate(['home']));
                 } else {
                   this.usernameError = true;
                   // alert('Username is already taken');

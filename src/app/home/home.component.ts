@@ -1,18 +1,22 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
 import {APIServiceClient} from '../services/APIServiceClient';
+import {UserServiceClient} from '../services/user.service.client';
+import {User} from '../models/user.model.client';
 import {} from '@types/googlemaps';
+import {Router} from '@angular/router';
+
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
+
 export class HomeComponent implements OnInit {
 
   @ViewChild('gmap') gmapElement: any;
   map: google.maps.Map;
   infoWindow: google.maps.InfoWindow;
-  marker: google.maps.Marker;
   marker_type: string;
   marker_title: string;
   markers: google.maps.Marker[];
@@ -20,12 +24,11 @@ export class HomeComponent implements OnInit {
   city: string;
   lng: number;
   lat: number;
-  location: Object;
-  apiData: Object;
   visible: boolean;
-  places: Object[];
+  loggedIn: boolean;
+  user: User;
 
-  constructor(private apiService: APIServiceClient) {
+  constructor(private apiService: APIServiceClient, private userService: UserServiceClient, private router: Router) {
   }
 
   getLocation() {
@@ -41,10 +44,9 @@ export class HomeComponent implements OnInit {
   getPlaces(type: string) {
     const request = {
       location: this.map.getCenter(),
-      radius: 2000,
+      radius: 1000,
       type: type
-    };
-
+    }
     const service = new google.maps.places.PlacesService(this.map);
     service.nearbySearch(request, results => {
       console.log(results);
@@ -74,11 +76,12 @@ export class HomeComponent implements OnInit {
           li.textContent = place.name;
           marker.setVisible(this.visible);
           this.markers.push(marker);
-          // placesList.appendChild(li);
 
           bounds.extend(place.geometry.location);
         }
         this.map.fitBounds(bounds);
+      } else {
+        alert('Nothing is found');
       }
     });
   }
@@ -88,16 +91,36 @@ export class HomeComponent implements OnInit {
     this.map.setCenter(new google.maps.LatLng(this.lat, this.lng));
   }
 
+  save() {
+    if (this.loggedIn) {
+      this.user.markers = [];
+      for (const m of this.markers) {
+        const mm = {
+          lat: m.getPosition().lat(),
+          lng: m.getPosition().lng(),
+          title: m.title,
+          type: m.icon.url
+        };
+        this.user.markers.push(mm);
+      }
+      this.userService.updateUser(this.user);
+      console.log(this.user);
+    } else {
+      alert('You need to Sign In first');
+      this.router.navigate(['login']);
+    }
+  }
+
   setCurrentLocation() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
-        this.lat =  position.coords.latitude;
+        this.lat = position.coords.latitude;
         this.lng = position.coords.longitude;
         this.infoWindow.setPosition(new google.maps.LatLng(this.lat, this.lng));
         this.infoWindow.setContent('You are here');
         this.infoWindow.open(this.map);
         this.setCenter();
-      }, function() {
+      }, function () {
         this.handleLocationError(true, this.infoWindow, this.map.getCenter());
       });
     } else {
@@ -129,13 +152,15 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.markers = [];
+    this.loggedIn = false;
+    this.visible = true;
     this.city = '';
     this.marker_title = '';
-    this.markers = [];
-    this.visible = true;
+
     const mapProp = {
       center: new google.maps.LatLng(50.4501, 30.5234),
-      zoom: 10,
+      zoom: 14,
       mapTypeId: google.maps.MapTypeId.ROADMAP,
       draggableCursor: 'default'
     };
@@ -153,17 +178,27 @@ export class HomeComponent implements OnInit {
       }
       this.marker_title = '';
       switch (this.marker_type) {
-        case 'restaurant': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/restaurant-71.png'; break;
-        case 'pharmacy': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/shopping-71.png'; break;
-        case 'school': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/school-71.png'; break;
-        case 'gas': url = 'https://maps.gstatic.com/mapfiles/place_api/icons/gas_station-71.png'; break;
-        default: url = 'https://maps.gstatic.com/mapfiles/place_api/icons/generic_business-71.png'; break;
+        case 'restaurant':
+          url = 'https://maps.gstatic.com/mapfiles/place_api/icons/restaurant-71.png';
+          break;
+        case 'pharmacy':
+          url = 'https://maps.gstatic.com/mapfiles/place_api/icons/shopping-71.png';
+          break;
+        case 'school':
+          url = 'https://maps.gstatic.com/mapfiles/place_api/icons/school-71.png';
+          break;
+        case 'gas':
+          url = 'https://maps.gstatic.com/mapfiles/place_api/icons/gas_station-71.png';
+          break;
+        default:
+          url = 'https://maps.gstatic.com/mapfiles/place_api/icons/generic_business-71.png';
+          break;
       }
       const image = {
         url: url,
-        size: new google.maps.Size(71, 71),
+        size: new google.maps.Size(25, 25),
         origin: new google.maps.Point(0, 0),
-        anchor: new google.maps.Point(10, 10),
+        anchor: new google.maps.Point(12, 12),
         scaledSize: new google.maps.Size(25, 25)
       };
       const marker = new google.maps.Marker({
@@ -174,10 +209,37 @@ export class HomeComponent implements OnInit {
         visible: this.visible
       });
       this.markers.push(marker);
-
     });
+
+    this.userService.checkStatus()
+      .then((res) => {
+      console.log(res);
+        if (res) {
+          this.loggedIn = true;
+          this.userService.profile()
+            .then(res2 => {
+              this.user = res2;
+              console.log(res2);
+              for(const m of this.user.markers){
+                const image = {
+                  url: m.type,
+                  size: new google.maps.Size(25, 25),
+                  origin: new google.maps.Point(0, 0),
+                  anchor: new google.maps.Point(12, 12),
+                  scaledSize: new google.maps.Size(25, 25)
+                };
+                const marker = new google.maps.Marker({
+                  map: this.map,
+                  icon: image,
+                  title: m.title,
+                  position: new google.maps.LatLng(m.lat, m.lng),
+                  visible: this.visible
+                });
+                this.markers.push(marker);
+              }
+            });
+        }
+      });
   }
-
-
 
 }

@@ -39,7 +39,7 @@ export class LoginComponent implements OnInit {
           .then((response) => {
             if (response !== null) {
               console.log(response);
-              this.router.navigate(['profile']);
+              this.router.navigate(['home']);
             } else {
               this.credentialsError = true;
             }

@@ -19,13 +19,12 @@
         <li *ngIf="!loggedIn" class="nav-item">
           <a class="nav-link" routerLink="./login" routerLinkActive="active"> Sign In </a>
         </li>
-        <li *ngIf="loggedIn" class="nav-item">
-          <a class="nav-link" routerLink="./profile" routerLinkActive="active"> Profile </a>
-        </li>
+        <!--<li *ngIf="loggedIn" class="nav-item">-->
+          <!--<a class="nav-link" routerLink="./profile" routerLinkActive="active"> Profile </a>-->
+        <!--</li>-->
         <li *ngIf="loggedIn" class="nav-item">
           <button class="btn bg-transparent nav-link"
-                  <!--(click)="logout()"-->
-          > Log Out </button>
+                  (click)="logout()"> Log Out </button>
         </li>
 
       </ul>
