@@ -21,6 +21,7 @@ export class HomeComponent implements OnInit {
   location: Object;
   apiData: Object;
   visible: boolean;
+  places: Object[];
 
   constructor(private apiService: APIServiceClient) {
   }
@@ -34,6 +35,54 @@ export class HomeComponent implements OnInit {
         this.setCenter();
       });
   }
+
+  getPlaces() {
+    const request = {
+      location: new google.maps.LatLng(this.lat, this.lng),
+      radius: 1000,
+      type: 'restaurant'
+    };
+
+    const service = new google.maps.places.PlacesService(this.map);
+    service.nearbySearch(request, results => {
+      for (let i = 0; i < results.length; i++) {
+        const place = results[i];
+        console.log(place);
+      }
+      const bounds = new google.maps.LatLngBounds();
+      for (let i = 0; i < results.length; i++) {
+        const place = results[i];
+        const image = {
+          url: place.icon,
+          size: new google.maps.Size(71, 71),
+          origin: new google.maps.Point(0, 0),
+          anchor: new google.maps.Point(17, 34),
+          scaledSize: new google.maps.Size(25, 25)
+        };
+
+        const marker = new google.maps.Marker({
+          map: this.map,
+          icon: image,
+          title: place.name,
+          position: place.geometry.location
+        });
+
+        const li = document.createElement('li');
+        li.textContent = place.name;
+        marker.setVisible(this.visible);
+        this.markers.push(marker);
+        // placesList.appendChild(li);
+
+        bounds.extend(place.geometry.location);
+      }
+      this.map.fitBounds(bounds);
+    });
+  }
+
+  callback(results, status) {
+
+  }
+
   setCenter() {
     this.map.setCenter(new google.maps.LatLng(this.lat, this.lng));
   }
@@ -64,7 +113,7 @@ export class HomeComponent implements OnInit {
     infoWindow.open(this.map);
   }
 
-  deleteMarkers(){
+  deleteMarkers() {
     for (const marker of this.markers) {
       marker.setMap(null);
     }
@@ -81,7 +130,7 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.city = '';
     this.markers = [];
-    this.visible = false;
+    this.visible = true;
     const mapProp = {
       center: new google.maps.LatLng(50.4501, 30.5234),
       zoom: 10,
@@ -97,6 +146,7 @@ export class HomeComponent implements OnInit {
       marker.setPosition(event.latLng);
       marker.setMap(this.map);
       marker.setVisible(this.visible);
+      marker.setTitle('new marker')
       this.markers.push(marker);
       console.log(this.markers);
     });
