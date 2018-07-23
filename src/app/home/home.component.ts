@@ -20,7 +20,6 @@ export class HomeComponent implements OnInit {
   marker_type: string;
   marker_title: string;
   markers: google.maps.Marker[];
-
   city: string;
   lng: number;
   lat: number;
@@ -28,8 +27,7 @@ export class HomeComponent implements OnInit {
   loggedIn: boolean;
   user: User;
 
-  constructor(private apiService: APIServiceClient, private userService: UserServiceClient, private router: Router) {
-  }
+  constructor(private apiService: APIServiceClient, private userService: UserServiceClient, private router: Router) {}
 
   getLocation() {
     this.apiService.getLocation(this.city)
@@ -57,26 +55,7 @@ export class HomeComponent implements OnInit {
         const bounds = new google.maps.LatLngBounds();
         for (let i = 0; i < results.length; i++) {
           const place = results[i];
-          const image = {
-            url: place.icon,
-            size: new google.maps.Size(71, 71),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(17, 34),
-            scaledSize: new google.maps.Size(25, 25)
-          };
-
-          const marker = new google.maps.Marker({
-            map: this.map,
-            icon: image,
-            title: place.name,
-            position: place.geometry.location
-          });
-
-          const li = document.createElement('li');
-          li.textContent = place.name;
-          marker.setVisible(this.visible);
-          this.markers.push(marker);
-
+          this.createMarker(place.geometry.location, place.name, place.icon)
           bounds.extend(place.geometry.location);
         }
         this.map.fitBounds(bounds);
@@ -111,6 +90,38 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  createMarker(latLng, title, type){
+    const image = {
+      url: type,
+      size: new google.maps.Size(25, 25),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(12, 12),
+      scaledSize: new google.maps.Size(25, 25)
+    };
+    const marker = new google.maps.Marker({
+      map: this.map,
+      icon: image,
+      title: title,
+      position: latLng,
+      visible: this.visible
+    });
+    this.markers.push(marker);
+  }
+
+  deleteMarkers() {
+    for (const marker of this.markers) {
+      marker.setMap(null);
+    }
+    this.markers = [];
+  }
+
+  changeVisibility() {
+    this.visible = !this.visible;
+    for (const marker of this.markers) {
+      marker.setVisible(this.visible);
+    }
+  }
+
   setCurrentLocation() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
@@ -135,20 +146,6 @@ export class HomeComponent implements OnInit {
       'Error: The Geolocation service failed.' :
       'Error: Your browser doesn\'t support geolocation.');
     infoWindow.open(this.map);
-  }
-
-  deleteMarkers() {
-    for (const marker of this.markers) {
-      marker.setMap(null);
-    }
-    this.markers = [];
-  }
-
-  changeVisibility() {
-    this.visible = !this.visible;
-    for (const marker of this.markers) {
-      marker.setVisible(this.visible);
-    }
   }
 
   ngOnInit() {
@@ -194,48 +191,18 @@ export class HomeComponent implements OnInit {
           url = 'https://maps.gstatic.com/mapfiles/place_api/icons/generic_business-71.png';
           break;
       }
-      const image = {
-        url: url,
-        size: new google.maps.Size(25, 25),
-        origin: new google.maps.Point(0, 0),
-        anchor: new google.maps.Point(12, 12),
-        scaledSize: new google.maps.Size(25, 25)
-      };
-      const marker = new google.maps.Marker({
-        map: this.map,
-        icon: image,
-        title: title,
-        position: event.latLng,
-        visible: this.visible
-      });
-      this.markers.push(marker);
+      this.createMarker(event.latLng, title, url);
     });
 
     this.userService.checkStatus()
       .then((res) => {
-      console.log(res);
         if (res) {
           this.loggedIn = true;
           this.userService.profile()
             .then(res2 => {
               this.user = res2;
-              console.log(res2);
               for(const m of this.user.markers){
-                const image = {
-                  url: m.type,
-                  size: new google.maps.Size(25, 25),
-                  origin: new google.maps.Point(0, 0),
-                  anchor: new google.maps.Point(12, 12),
-                  scaledSize: new google.maps.Size(25, 25)
-                };
-                const marker = new google.maps.Marker({
-                  map: this.map,
-                  icon: image,
-                  title: m.title,
-                  position: new google.maps.LatLng(m.lat, m.lng),
-                  visible: this.visible
-                });
-                this.markers.push(marker);
+                this.createMarker(new google.maps.LatLng(m.lat, m.lng), m.title, m.type);
               }
             });
         }
