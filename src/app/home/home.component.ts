@@ -27,7 +27,8 @@ export class HomeComponent implements OnInit {
   loggedIn: boolean;
   user: User;
 
-  constructor(private apiService: APIServiceClient, private userService: UserServiceClient, private router: Router) {}
+  constructor(private apiService: APIServiceClient, private userService: UserServiceClient, private router: Router) {
+  }
 
   getLocation() {
     this.apiService.getLocation(this.city)
@@ -47,7 +48,6 @@ export class HomeComponent implements OnInit {
     }
     const service = new google.maps.places.PlacesService(this.map);
     service.nearbySearch(request, results => {
-      console.log(results);
       if (results.length > 0) {
         for (let i = 0; i < results.length; i++) {
           const place = results[i];
@@ -72,25 +72,21 @@ export class HomeComponent implements OnInit {
 
   save() {
     if (this.loggedIn) {
-      this.user.markers = [];
-      for (const m of this.markers) {
-        const mm = {
+      this.user.markers = this.markers.map(m => (
+        {
           lat: m.getPosition().lat(),
           lng: m.getPosition().lng(),
           title: m.title,
           type: m.icon.url
-        };
-        this.user.markers.push(mm);
-      }
+        }));
       this.userService.updateUser(this.user);
-      console.log(this.user);
     } else {
       alert('You need to Sign In first');
       this.router.navigate(['login']);
     }
   }
 
-  createMarker(latLng, title, type){
+  createMarker(latLng, title, type) {
     const image = {
       url: type,
       size: new google.maps.Size(25, 25),
@@ -198,13 +194,18 @@ export class HomeComponent implements OnInit {
       .then((res) => {
         if (res) {
           this.loggedIn = true;
-          this.userService.profile()
-            .then(res2 => {
-              this.user = res2;
-              for(const m of this.user.markers){
-                this.createMarker(new google.maps.LatLng(m.lat, m.lng), m.title, m.type);
-              }
-            });
+          return this.userService.profile()
+        } else {
+          this.loggedIn = false;
+          return null;
+        }
+      })
+      .then(res => {
+        this.user = res;
+        if (res){
+          for (const m of this.user.markers) {
+            this.createMarker(new google.maps.LatLng(m.lat, m.lng), m.title, m.type);
+          }
         }
       });
   }
